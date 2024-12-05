@@ -1,0 +1,76 @@
+package
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+func read_reports(path string) [][]int {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error: couldn't read reports", err)
+	}
+
+	defer file.Close()
+
+	reports := [][]int{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		report := []int{}
+		text := strings.Split(scanner.Text(), " ")
+
+		for _, str := range text {
+			num, err := strconv.Atoi(str)
+			if err != nil {
+				fmt.Println("Error converting string to int", err)
+			}
+			report = append(report, num)
+		}
+		reports = append(reports, report)
+	}
+	return reports
+}
+
+func is_valid_report(report []int) bool {
+	// Must be all increasing
+	all_increasing := true
+	// Or all decreasing
+	all_decreasing := true
+	// Levels must differ between 1-3
+	for i := range report {
+		// if it makes it to the end, skip out the loop
+		if i+1 == len(report) {
+			return all_decreasing || all_increasing
+		}
+		difference := report[i] - report[i+1]
+		// Negative escape condition, handles the equal case
+		if int(math.Abs(float64(difference))) > 3 || int(math.Abs(float64(difference))) < 1 {
+			return false
+		}
+
+		if difference < 0 {
+			all_decreasing = false
+		} else {
+			all_increasing = false
+		}
+	}
+	return all_decreasing || all_increasing
+}
+
+func main() {
+	fmt.Println(len(read_reports("input.txt")))
+	fmt.Println((read_reports("input.txt")))
+	count := 0
+
+	for _, report := range read_reports("input.txt") {
+		if is_valid_report(report) {
+			count++
+		}
+	}
+
+	fmt.Println(count)
+}
